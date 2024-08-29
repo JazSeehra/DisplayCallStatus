@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Board</title>
+    <style>
+        body {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            font-family: Arial, sans-serif;
+        }
+
+        .quadrant {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1 1 50%;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .available {
+            background-color: #28a745; /* Green for available */
+            color: white;
+        }
+
+        .on-call {
+            background-color: #dc3545; /* Red for on call */
+            color: white;
+        }
+
+        .status-text {
+            text-align: center;
+        }
+
+        h2 {
+            margin: 0;
+            padding: 0;
+            font-size: 24px;
+        }
+    </style>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBuZnv3CON8FPqGXhgDEQ6U8yvS9e6LjHQ",
+            authDomain: "calldisplayliveupdates.firebaseapp.com",
+            projectId: "calldisplayliveupdates",
+            storageBucket: "calldisplayliveupdates.appspot.com",
+            messagingSenderId: "227786759919",
+            appId: "1:227786759919:web:c1685a075a932408ba851a"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Function to toggle status and update Firebase
+        function toggleStatus(element) {
+            const status = element.classList.contains('available') ? 'On Call' : 'Available';
+            const name = element.querySelector('h2').textContent;
+
+            // Update Firebase with the new status
+            set(ref(database, 'statuses/' + name), {
+                status: status
+            });
+        }
+
+        // Listen for Firebase data changes and update UI
+        function setupListeners() {
+            const quadrants = document.querySelectorAll('.quadrant');
+            quadrants.forEach(quadrant => {
+                const name = quadrant.querySelector('h2').textContent;
+                const statusRef = ref(database, 'statuses/' + name);
+
+                onValue(statusRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        const status = data.status;
+                        if (status === 'Available') {
+                            quadrant.classList.remove('on-call');
+                            quadrant.classList.add('available');
+                            quadrant.querySelector('p').textContent = 'Available';
+                        } else {
+                            quadrant.classList.remove('available');
+                            quadrant.classList.add('on-call');
+                            quadrant.querySelector('p').textContent = 'On Call';
+                        }
+                    }
+                });
+
+                // Add click event listener for each quadrant
+                quadrant.addEventListener('click', () => toggleStatus(quadrant));
+            });
+        }
+
+        // Initialize listeners on page load
+        window.onload = setupListeners;
+    </script>
+</head>
+<body>
+    <!-- Quadrant for Amanda -->
+    <div class="quadrant available">
+        <div class="status-text">
+            <h2>Amanda</h2>
+            <p>Available</p>
+        </div>
+    </div>
+
+    <!-- Quadrant for Ethan -->
+    <div class="quadrant available">
+        <div class="status-text">
+            <h2>Ethan</h2>
+            <p>Available</p>
+        </div>
+    </div>
+
+    <!-- Quadrant for Matt -->
+    <div class="quadrant available">
+        <div class="status-text">
+            <h2>Matt</h2>
+            <p>Available</p>
+        </div>
+    </div>
+
+    <!-- Quadrant for Jaz -->
+    <div class="quadrant available">
+        <div class="status-text">
+            <h2>Jaz</h2>
+            <p>Available</p>
+        </div>
+    </div>
+</body>
+</html>
